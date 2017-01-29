@@ -44,6 +44,6 @@ function beginLoop() {
     loop();
 }
 
-window.onload = function() {
-
-}
+$(document).ready(function() {
+    $( "body" ).append( "Nice try" );
+})
