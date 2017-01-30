@@ -125,7 +125,13 @@ class CardTable {
         this.lastFrame = thisFrame;
     }
 
+    resize(w, h) {
+        this.card_piles.map((card_pile) => card_pile.resize(w, h));
+    }
+
     update(elapsed) {
+        this.resize(this.canvas.width, this.canvas.height);
+
         this.fps = Math.floor(0.8 * this.fps + 0.2 * 1000 / elapsed);
         var hovered = false;
         var index = -1;
@@ -176,6 +182,7 @@ class CardTable {
     }
 
     addCardPile(cardPile) {
+        cardPile.parent = this;
         this.card_piles.push(cardPile);
     }
 
@@ -494,6 +501,8 @@ const SteadyHand = {
 
 class CardPile {
     constructor(x, y, options, base) {
+        this.x = x;
+        this.y = y;
         base = base || CompressedPile;
         options = options || {};
         this.transform = new Transform();
@@ -508,6 +517,12 @@ class CardPile {
         this.cards = [];
 
         this.onClick = null;
+
+        this.parent = null;
+    }
+
+    resize(w, h) {
+        
     }
 
     update(elapsed) {
@@ -572,17 +587,24 @@ class CardPile {
 
     updateTransforms() {
         var opt = this.hovered && this.options.hover.enabled ? this.options.hover : this.options;
+
         for (var i = 0; i < this.cards.length; i++) {
             var card = this.cards[i];
             if (opt.spread.perCard) {
+                var spreadW = opt.spread.x * this.cards.length;
+                var spreadH = opt.spread.y * this.cards.length;
+
+                var left = -spreadW/2;
+                var right = spreadW/2;
                 card.target.position.x = map(i, 0, this.cards.length - 1,
-                        (opt.leftOnTop ? -1 : 1) * -opt.spread.x * this.cards.length / 2,
-                        (opt.leftOnTop ? -1 : 1) * opt.spread.x * this.cards.length / 2) +
+                        (opt.leftOnTop ? -1 : 1) * left,
+                        (opt.leftOnTop ? -1 : 1) * right) +
                     Math.random() * opt.disturbance.x;
 
-                card.target.position.y = map(i, 0, this.cards.length - 1, -opt.spread.y * this.cards.length / 2,
-                        opt.spread.y * this.cards.length / 2) +
-                    Math.random() * opt.disturbance.y;
+                var top = -spreadH/2;
+                var bottom = spreadH/2;
+                card.target.position.y = map(i, 0, this.cards.length - 1,
+                    top, bottom) + Math.random() * opt.disturbance.y;
 
                 card.target.rotation = map(i, 0, this.cards.length - 1, -opt.spread.angle / 2, opt.spread.angle / 2) + Math.random() * opt.disturbance.angle;
             } else {

@@ -36,16 +36,28 @@ $(document).ready(function() {
     var w = document.body.clientWidth;
     var h = document.body.clientHeight;
     hand = new CardPile(w/3, h-15, {spread: {x: 80}}, SteadyHand);
+    hand.resize = function(w, h) {
+        this.transform.position.x = w/3;
+        this.transform.position.y = h-15;
+    }
     firstrow = new CardPile(w/2, h/2 - 173/2 - 24, {
         spread: {
             x: 92
         }
     }, DisplayRow);
+    firstrow.resize = function(w, h) {
+        this.transform.position.x = w/2;
+        this.transform.position.y = h/2 - 173/2 - 24;
+    }
     secondrow = new CardPile(w/2, h/2 + 173/2 - 20, {
         spread: {
             x: 92
         }
     }, DisplayRow);
+    secondrow.resize = function(w, h) {
+        this.transform.position.x = w/2;
+        this.transform.position.y = h/2 + 173/2 - 20;
+    }
     for (var i = 0; i < 5; i ++) {
         var img;
         if (i < 3) {
