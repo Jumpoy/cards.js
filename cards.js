@@ -103,6 +103,10 @@ class Ctx {
     rotate(q) {
         this.raw_ctx.rotate(q);
     }
+
+    drawImage(img, x, y, w, h) {
+        this.raw_ctx.drawImage(img, x, y, w, h);
+    }
 }
 
 class CardTable {
@@ -153,7 +157,12 @@ class CardTable {
         this.ctx.black();
 
         for (var card_pile of this.card_piles) {
-            card_pile.draw(this.ctx);
+            if (!card_pile.hovered)
+                card_pile.draw(this.ctx);
+        }
+        for (var card_pile of this.card_piles) {
+            if (card_pile.hovered)
+                card_pile.draw(this.ctx);
         }
     }
 
@@ -201,6 +210,14 @@ class Card {
                 x = -this.width / 2;
                 y = 0;
                 break;
+            case "left":
+                x = 0;
+                y = -this.height / 2;
+                break;
+            case "right":
+                x = this.width;
+                y = -this.height / 2;
+                break;
         }
         return {
             x: x * this.scale,
@@ -212,11 +229,8 @@ class Card {
         ctx.save();
         ctx.translate(this.transform.position.x, this.transform.position.y);
         ctx.rotate(this.transform.rotation);
-        //ctx.fill('white');
-        //ctx.stroke('black');
         var anch = this.adjustAnchor();
         this.drawCard(ctx, anch.x, anch.y, this.width * this.scale, this.height * this.scale);
-        //ctx.strokeRect(anch.x, anch.y, this.width * this.scale, this.height * this.scale);
         ctx.restore();
     }
 
@@ -231,17 +245,12 @@ class Card {
         this.transform.position.x = Math.max(0, 0.15) * this.target.position.x + 0.85 * this.transform.position.x;
         this.transform.position.y = Math.max(0, 0.15) * this.target.position.y + 0.85 * this.transform.position.y;
         this.transform.rotation = 0.15 * this.target.rotation + 0.85 * this.transform.rotation;
-        if (this.hovered) {
-            this.targetScale = 1.6;
-        } else {
-            this.targetScale = 1;
-        }
         this.scale = 0.15 * this.targetScale + 0.85 * this.scale;
     }
 }
 
 class NumberedCard extends Card {
-    constructor(width, height, num, anchor="bottom") {
+    constructor(width, height, num, anchor = "bottom") {
         super(width, height, anchor);
         this.num = num;
     }
@@ -252,8 +261,20 @@ class NumberedCard extends Card {
         ctx.rect(x, y, w, h);
         ctx.strokeRect(x, y, w, h);
         ctx.fill('black');
-        ctx.text(this.num, x+5, y+15)
-        ctx.ellipse(x + w/2, y + h/2, 10, 10);
+        ctx.text(this.num, x + 5, y + 15)
+        ctx.ellipse(x + w / 2, y + h / 2, 10, 10);
+    }
+}
+
+class PictureCard extends Card {
+    constructor(width, height, image_address, anchor = "bottom") {
+        super(width, height, anchor);
+        this.img = new Image();
+        this.img.src = image_address;
+    }
+
+    drawCard(ctx, x, y, w, h) {
+        ctx.drawImage(this.img, x, y, w, h);
     }
 }
 
@@ -279,6 +300,7 @@ class Transform {
 
 const CompressedPile = {
     spread: {
+        perCard: false,
         x: 0,
         y: 0,
         angle: 0,
@@ -310,10 +332,20 @@ const CompressedPile = {
             angle: 0,
         }
     },
+    hoveredCard: {
+        enabled: true,
+        scale: 1.4,
+        defaultScale: 1,
+        offset: {
+            x: 0,
+            y: 0,
+        }
+    }
 }
 
 const HandPile = {
     spread: {
+        perCard: false,
         x: 500,
         y: 0,
         angle: 0,
@@ -345,6 +377,76 @@ const HandPile = {
             angle: 0,
         }
     },
+    hoveredCard: {
+        enabled: true,
+        defaultScale: 1,
+        scale: 1.6,
+        offset: {
+            x: 0,
+            y: 0,
+        }
+    }
+}
+
+const DisplayRow = {
+    spread: {
+        perCard: true,
+        x: 0,
+        y: 0,
+    },
+    disturbance: {
+        x: 0,
+        y: 0,
+        angle: 0,
+    },
+    spreadFromHovered: {
+        left: 0,
+        right: 0,
+    },
+    leftOnTop: false,
+    hover: {
+        enabled: false,
+    },
+    hoveredCard: {
+        enabled: true,
+        defaultScale: 1,
+        scale: 1.5,
+        offset: {
+            x: 0,
+            y: 0,
+        }
+    }
+}
+
+const SteadyHand = {
+    spread: {
+        perCard: true,
+        x: 60,
+        y: 0,
+        angle: 0,
+    },
+    disturbance: {
+        x: 0,
+        y: 0,
+        angle: 0,
+    },
+    spreadFromHovered: {
+        left: 0,
+        right: 0,
+    },
+    leftOnTop: false,
+    hover: {
+        enabled: false,
+    },
+    hoveredCard: {
+        enabled: true,
+        defaultScale: 1,
+        scale: 1.3,
+        offset: {
+            x: 0,
+            y: 0,
+        }
+    }
 }
 
 class CardPile {
@@ -420,16 +522,30 @@ class CardPile {
         var opt = this.hovered && this.options.hover.enabled ? this.options.hover : this.options;
         for (var i = 0; i < this.cards.length; i++) {
             var card = this.cards[i];
-            card.target.position.x = map(i, 0, this.cards.length - 1,
-                    (opt.leftOnTop ? -1 : 1) * -opt.spread.x / 2,
-                    (opt.leftOnTop ? -1 : 1) * opt.spread.x / 2) +
-                Math.random() * opt.disturbance.x;
+            if (opt.spread.perCard) {
+                card.target.position.x = map(i, 0, this.cards.length - 1,
+                        (opt.leftOnTop ? -1 : 1) * -opt.spread.x * this.cards.length / 2,
+                        (opt.leftOnTop ? -1 : 1) * opt.spread.x * this.cards.length / 2) +
+                    Math.random() * opt.disturbance.x;
 
-            card.target.position.y = map(i, 0, this.cards.length - 1,
-                    -opt.spread.y / 2, opt.spread.y / 2) +
-                Math.random() * opt.disturbance.y;
+                card.target.position.y = map(i, 0, this.cards.length - 1,
+                        -opt.spread.y * this.cards.length / 2,
+                        opt.spread.y * this.cards.length / 2) +
+                    Math.random() * opt.disturbance.y;
 
-            card.target.rotation = map(i, 0, this.cards.length - 1, -opt.spread.angle / 2, opt.spread.angle / 2) + Math.random() * opt.disturbance.angle;
+                card.target.rotation = map(i, 0, this.cards.length - 1, -opt.spread.angle / 2, opt.spread.angle / 2) + Math.random() * opt.disturbance.angle;
+            }
+            else {
+                card.target.position.x = map(i, 0, this.cards.length - 1,
+                        (opt.leftOnTop ? -1 : 1) * -opt.spread.x / 2,
+                        (opt.leftOnTop ? -1 : 1) * opt.spread.x / 2) +
+                    Math.random() * opt.disturbance.x;
+
+                card.target.position.y = map(i, 0, this.cards.length - 1, -opt.spread.y / 2, opt.spread.y / 2) +
+                    Math.random() * opt.disturbance.y;
+
+                card.target.rotation = map(i, 0, this.cards.length - 1, -opt.spread.angle / 2, opt.spread.angle / 2) + Math.random() * opt.disturbance.angle;
+            }
         }
 
         for (var i = 0; i < this.cards.length; i++) {
@@ -440,6 +556,13 @@ class CardPile {
                 if (i > this.hovered_index) {
                     this.cards[i].target.position.x += opt.spreadFromHovered.right;
                 }
+            }
+            if (this.cards[i].hovered && this.options.hoveredCard.enabled) {
+                this.cards[i].targetScale = this.options.hoveredCard.scale;
+                this.cards[i].target.position.x += this.options.hoveredCard.offset.x;
+                this.cards[i].target.position.y += this.options.hoveredCard.offset.y;
+            } else if (this.options.hoveredCard.enabled) {
+                this.cards[i].targetScale = this.options.hoveredCard.defaultScale;
             }
         }
     }
@@ -466,7 +589,7 @@ class CardPile {
     }
 
     removeCard(card) {
-        for (var i = 0; i < this.cards.length; i ++) {
+        for (var i = 0; i < this.cards.length; i++) {
             if (this.cards[i] === card) {
                 this.cards.splice(i, 1);
                 break;

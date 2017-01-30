@@ -2,39 +2,66 @@ var cT;
 
 var c;
 var hand;
-var compressed;
+var firstrow;
+var secondrow;
+
+var copper = 'http://dominion-o-dude.herokuapp.com/static/images/scans/common/copper.jpg';
+var estate = 'http://dominion-o-dude.herokuapp.com/static/images/scans/common/estate.jpg';
+
+var firstrows = [
+    'http://dominion-o-dude.herokuapp.com/static/images/scans/common/copper.jpg',
+    'http://dominion-o-dude.herokuapp.com/static/images/scans/common/silver.jpg',
+    'http://dominion-o-dude.herokuapp.com/static/images/scans/common/gold.jpg',
+    'http://dominion-o-dude.herokuapp.com/static/images/scans/common/estate.jpg',
+    'http://dominion-o-dude.herokuapp.com/static/images/scans/common/duchy.jpg',
+    'http://dominion-o-dude.herokuapp.com/static/images/scans/common/province.jpg',
+    'http://dominion-o-dude.herokuapp.com/static/images/scans/common/curse.jpg'
+]
+
+var secondrows = [
+    'http://dominion-o-dude.herokuapp.com/static/images/scans/base/moat.jpg',
+    'http://dominion-o-dude.herokuapp.com/static/images/scans/base/cellar.jpg',
+    'http://dominion-o-dude.herokuapp.com/static/images/scans/base/workshop.jpg',
+    'http://dominion-o-dude.herokuapp.com/static/images/scans/base/woodcutter.jpg',
+    'http://dominion-o-dude.herokuapp.com/static/images/scans/base/bureaucrat.jpg',
+    'http://dominion-o-dude.herokuapp.com/static/images/scans/base/remodel.jpg',
+    'http://dominion-o-dude.herokuapp.com/static/images/scans/base/throneroom.jpg',
+    'http://dominion-o-dude.herokuapp.com/static/images/scans/base/witch.jpg',
+    'http://dominion-o-dude.herokuapp.com/static/images/scans/base/festival.jpg',
+    'http://dominion-o-dude.herokuapp.com/static/images/scans/base/market.jpg',
+]
 
 $(document).ready(function() {
     cT = new CardTable();
-    hand = new CardPile(document.body.clientWidth/2, document.body.clientHeight-15, {}, HandPile);
-    compressed = new CardPile(document.body.clientWidth/2, document.body.clientHeight/2, {
-        hover: {
-            spread: {
-                x: 300,
-                angle: 0.2,
-            },
-            spreadFromHovered: {
-                left: 50,
-                right: 80
-            }
+    hand = new CardPile(document.body.clientWidth/2, document.body.clientHeight-15, {}, SteadyHand);
+    firstrow = new CardPile(document.body.clientWidth/2, document.body.clientHeight/2 - 173/2 - 24, {
+        spread: {
+            x: 92
         }
-    }, CompressedPile);
-    for (var i = 0; i < 10; i ++) {
-        c = new NumberedCard(100, 130, i);
+    }, DisplayRow);
+    secondrow = new CardPile(document.body.clientWidth/2, document.body.clientHeight/2 + 173/2 + 10, {
+        spread: {
+            x: 92
+        }
+    }, DisplayRow);
+    for (var i = 0; i < 5; i ++) {
+        if (i < 3) {
+            c = new PictureCard(108, 173, copper);
+        }
+        else {
+            c = new PictureCard(108, 173, estate);
+        }
         hand.addCard(c);
-        c = new NumberedCard(100, 130, i);
-        compressed.addCard(c);
+    }
+    for (var link of firstrows) {
+        c = new PictureCard(108, 173, link, "center");
+        firstrow.addCard(c);
+    }
+    for (var link of secondrows) {
+        c = new PictureCard(108, 173, link, "center");
+        secondrow.addCard(c);
     }
     cT.addCardPile(hand);
-    cT.addCardPile(compressed);
+    cT.addCardPile(firstrow);
+    cT.addCardPile(secondrow);
 });
-
-function f() {
-    if (hand.cards.length < 7 || (Math.random() < 0.5 && hand.cards.length < 12)) {
-        var c = new NumberedCard(100, 130, (Math.random()*20).toLocaleString())
-        hand.addCard(c);
-    }
-    else {
-        hand.removeNthCard(Math.floor(Math.random()*hand.cards.length));
-    }
-}
