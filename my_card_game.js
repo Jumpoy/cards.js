@@ -41,7 +41,7 @@ $(document).ready(function() {
             x: 92
         }
     }, DisplayRow);
-    secondrow = new CardPile(w/2, h/2 + 173/2 + 10, {
+    secondrow = new CardPile(w/2, h/2 + 173/2 - 20, {
         spread: {
             x: 92
         }
@@ -58,11 +58,17 @@ $(document).ready(function() {
         hand.addCard(c);
     }
     for (var link of firstrows) {
-        c = new BorderedPictureCard(108, 173, link, 8, "center");
+        c = new BorderedPictureCard(108, 173, link, 10, "center");
+        c.onClick = function() {
+            this.num --;
+        }
         firstrow.addCard(c);
     }
     for (var link of secondrows) {
         c = new BorderedPictureCard(108, 173, link, 10, "center");
+        c.onClick = function() {
+            this.num --;
+        }
         secondrow.addCard(c);
     }
     cT.addCardPile(hand);

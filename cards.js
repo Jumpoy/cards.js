@@ -1,53 +1,18 @@
-var width,
-    height;
-
-var update,
-    draw,
-    setup;
-
-var mousePressed;
-
-var MOUSE = {
-    x: 0,
-    y: 0,
-}
-
 var PI = Math.PI;
 
-function beginLoop() {
-
-    var frameId = 0;
-    var lastFrame = Date.now();
-
-    function loop() {
-
-        //canvas.width = $(document).width();
-        //canvas.height = $(document).height();
-
-        var thisFrame = Date.now();
-
-        var elapsed = thisFrame - lastFrame;
-
-        frameId = window.requestAnimationFrame(loop);
-
-        if (update !== undefined) {
-            update(elapsed);
-        }
-
-        if (draw !== undefined) {
-            draw();
-        }
-
-        lastFrame = thisFrame;
-    }
-
-    loop();
+function sign(x) {
+    if (x < 0) return -1;
+    if (x > 0) return 1;
+    return 0;
 }
 
-function each(array, f) {
-    for (var i of array) {
-        f(i);
+function constrain(x, a, b) {
+    if (a > b) {
+        var temp = a;
+        a = b;
+        b = a;
     }
+    return Math.max(a, Math.min(x, b));
 }
 
 class Ctx {
@@ -126,7 +91,7 @@ class Ctx {
 
 class CardTable {
     constructor() {
-        this.canvas = createCanvas();
+        this.canvas = createCanvas(this);
         this.ctx = new Ctx(this.canvas.getContext("2d"));
 
         $("body").prepend(this.canvas);
@@ -173,7 +138,7 @@ class CardTable {
         }
         if (!hovered) {
 
-            each(this.card_piles, (card_pile) => {
+            this.card_piles.map( (card_pile) => {
                 card_pile.hovered = false;
                 card_pile.locked = false;
             });
@@ -200,21 +165,22 @@ class CardTable {
         this.ctx.wipe();
         this.ctx.black();
 
-        for (var card_pile of this.card_piles) {
-            if (!card_pile.hovered)
-                card_pile.draw(this.ctx);
-        }
-        each(this.card_piles, (card_pile) => {
+
+        this.card_piles.map( (card_pile) => {
             if (!card_pile.hovered) card_pile.draw(this.ctx)
         });
 
-        each(this.card_piles, (card_pile) => {
+        this.card_piles.map( (card_pile) => {
             if (card_pile.hovered) card_pile.draw(this.ctx)
         });
     }
 
     addCardPile(cardPile) {
         this.card_piles.push(cardPile);
+    }
+
+    mousePressed() {
+        this.card_piles.map( (card_pile) => { if (card_pile.hovered) card_pile.mousePressed() });
     }
 }
 
@@ -230,6 +196,10 @@ class Card {
 
         this.scale = 1;
         this.targetScale = 1;
+
+        this.parent = null;
+
+        this.onClick = null;
     }
 
     mouseCollides(mouse) {
@@ -289,10 +259,16 @@ class Card {
     }
 
     update(elapsed) {
-        this.transform.position.x = Math.max(0, 0.15) * this.target.position.x + 0.85 * this.transform.position.x;
-        this.transform.position.y = Math.max(0, 0.15) * this.target.position.y + 0.85 * this.transform.position.y;
+        this.transform.position.x = 0.15 * this.target.position.x + 0.85 * this.transform.position.x;
+        this.transform.position.y = 0.15 * this.target.position.y + 0.85 * this.transform.position.y;
         this.transform.rotation = 0.15 * this.target.rotation + 0.85 * this.transform.rotation;
         this.scale = 0.15 * this.targetScale + 0.85 * this.scale;
+    }
+
+    mousePressed() {
+        if (this.onClick) {
+            this.onClick();
+        }
     }
 }
 
@@ -530,6 +506,8 @@ class CardPile {
         this.locked = false;
 
         this.cards = [];
+
+        this.onClick = null;
     }
 
     update(elapsed) {
@@ -579,7 +557,7 @@ class CardPile {
                     this.cards[i].hovered = false;
                 }
             }
-            each(this.cards, (card) => card.update(elapsed));
+            this.cards.map( (card) => card.update(elapsed));
 
             if (changed) {
                 this.updateTransforms();
@@ -588,7 +566,7 @@ class CardPile {
         if (this.locked) {
             this.updateTransforms();
 
-            each(this.cards, (card) => card.update(elapsed));
+            this.cards.map( (card) => card.update(elapsed));
         }
     }
 
@@ -643,9 +621,9 @@ class CardPile {
         ctx.save();
         ctx.translate(this.transform.position.x, this.transform.position.y);
 
-        each(this.cards, (card) => card.draw(ctx));
+        this.cards.map( (card) => card.draw(ctx));
 
-        each(this.cards, (card) => {
+        this.cards.map( (card) => {
             if (card.hovered) card.draw(ctx)
         });
 
@@ -654,6 +632,7 @@ class CardPile {
 
     addCard(card) {
         this.cards.push(card);
+        card.parent = this;
         this.updateTransforms();
     }
 
@@ -671,9 +650,16 @@ class CardPile {
         this.cards.splice(n, 1);
         this.updateTransforms();
     }
+
+    mousePressed() {
+        if (this.onClick) {
+            this.onClick();
+        }
+        this.cards.map( (card) => {if (card.hovered) card.mousePressed() } );
+    }
 }
 
-function createCanvas() {
+function createCanvas(parent) {
     var canvas = $("<canvas></canvas>").attr("id", "canvas")[0];
     $(canvas).css({
         "display": "block",
@@ -684,8 +670,8 @@ function createCanvas() {
         Mouse.y = event.pageY - parentOffset.top;
     })
     $(canvas).on('click', function() {
-        f();
-    })
+        parent.mousePressed();
+    });
     return canvas;
 }
 
