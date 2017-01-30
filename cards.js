@@ -50,7 +50,7 @@ class Ctx {
     }
 
     wipe() {
-        this.raw_ctx.clearRect(-10, -10, $(document).width()+20, $(document).height()+20);
+        this.raw_ctx.clearRect(-10, -10, $(document).width() + 20, $(document).height() + 20);
     }
 
     ellipse(x, y, w, h) {
@@ -110,7 +110,7 @@ class CardTable {
         this.canvas = createCanvas();
         this.ctx = new Ctx(this.canvas.getContext("2d"));
 
-        $( "body" ).prepend( this.canvas );
+        $("body").prepend(this.canvas);
 
         this.card_piles = [];
         this.beginLoop();
@@ -131,7 +131,9 @@ class CardTable {
         var thisFrame = Date.now();
         var elapsed = thisFrame - this.lastFrame;
 
-        window.requestAnimationFrame(() => {this.loop()});
+        window.requestAnimationFrame(() => {
+            this.loop()
+        });
 
         this.update(elapsed);
         this.draw();
@@ -140,7 +142,7 @@ class CardTable {
     }
 
     update(elapsed) {
-        this.fps = Math.floor(0.8 * this.fps + 0.2 * 1000/elapsed);
+        this.fps = Math.floor(0.8 * this.fps + 0.2 * 1000 / elapsed);
         for (var card_pile of this.card_piles) {
             card_pile.update(elapsed);
         }
@@ -161,7 +163,7 @@ class CardTable {
 }
 
 class Card {
-    constructor(width, height, anchor="bottom") {
+    constructor(width, height, anchor = "bottom") {
         this.width = width;
         this.height = height;
         this.anchor = anchor;
@@ -186,33 +188,43 @@ class Card {
 
     adjustAnchor() {
         var x, y;
-        switch(this.anchor) {
+        switch (this.anchor) {
             case "bottom":
-                x = -this.width/2;
+                x = -this.width / 2;
                 y = -this.height;
                 break;
             case "center":
-                x = -this.width/2;
-                y = -this.height/2;
+                x = -this.width / 2;
+                y = -this.height / 2;
                 break;
             case "top":
-                x = -this.width/2;
+                x = -this.width / 2;
                 y = 0;
                 break;
         }
-        return {x: x * this.scale, y: y * this.scale};
+        return {
+            x: x * this.scale,
+            y: y * this.scale
+        };
     }
 
     draw(ctx) {
         ctx.save();
         ctx.translate(this.transform.position.x, this.transform.position.y);
         ctx.rotate(this.transform.rotation);
+        //ctx.fill('white');
+        //ctx.stroke('black');
+        var anch = this.adjustAnchor();
+        this.drawCard(ctx, anch.x, anch.y, this.width * this.scale, this.height * this.scale);
+        //ctx.strokeRect(anch.x, anch.y, this.width * this.scale, this.height * this.scale);
+        ctx.restore();
+    }
+
+    drawCard(ctx, x, y, w, h) {
         ctx.fill('white');
         ctx.stroke('black');
-        var anch = this.adjustAnchor();
-        ctx.rect(anch.x, anch.y, this.width * this.scale, this.height * this.scale);
-        ctx.strokeRect(anch.x, anch.y, this.width * this.scale, this.height * this.scale);
-        ctx.restore();
+        ctx.rect(x, y, w, h);
+        ctx.strokeRect(x, y, w, h);
     }
 
     update(elapsed) {
@@ -228,56 +240,158 @@ class Card {
     }
 }
 
+class NumberedCard extends Card {
+    constructor(width, height, num, anchor="bottom") {
+        super(width, height, anchor);
+        this.num = num;
+    }
+
+    drawCard(ctx, x, y, w, h) {
+        ctx.fill('white');
+        ctx.stroke('black');
+        ctx.rect(x, y, w, h);
+        ctx.strokeRect(x, y, w, h);
+        ctx.fill('black');
+        ctx.text(this.num, x+5, y+15)
+        ctx.ellipse(x + w/2, y + h/2, 10, 10);
+    }
+}
+
 function map(x, a, b, c, d) {
     if (c === d) {
         return c;
     }
     if (a === b) {
-        return (c/2 + d/2);
+        return (c / 2 + d / 2);
     }
-    return c + (x-a) * (d-c)/(b-a);
+    return c + (x - a) * (d - c) / (b - a);
 }
 
 class Transform {
     constructor() {
-        this.position = {x: 0, y: 0};
+        this.position = {
+            x: 0,
+            y: 0
+        };
         this.rotation = 0;
     }
 }
 
+const CompressedPile = {
+    spread: {
+        x: 0,
+        y: 0,
+        angle: 0,
+    },
+    disturbance: {
+        x: 0,
+        y: 0,
+        angle: 0,
+    },
+    spreadFromHovered: {
+        left: 50,
+        right: 120,
+    },
+    leftOnTop: false,
+    hover: {
+        spreadFromHovered: {
+            left: 50,
+            right: 106,
+        },
+        enabled: true,
+        spread: {
+            x: 200,
+            y: 0,
+            angle: 0,
+        },
+        disturbance: {
+            x: 0,
+            y: 0,
+            angle: 0,
+        }
+    },
+}
+
+const HandPile = {
+    spread: {
+        x: 500,
+        y: 0,
+        angle: 0,
+    },
+    disturbance: {
+        x: 0,
+        y: 0,
+        angle: 0,
+    },
+    spreadFromHovered: {
+        left: 20,
+        right: 70,
+    },
+    leftOnTop: false,
+    hover: {
+        spreadFromHovered: {
+            left: 0,
+            right: 0,
+        },
+        enabled: false,
+        spread: {
+            x: 200,
+            y: 0,
+            angle: 0,
+        },
+        disturbance: {
+            x: 0,
+            y: 0,
+            angle: 0,
+        }
+    },
+}
+
 class CardPile {
-    constructor(x, y, options={}) {
-        this.x = x;
-        this.y = y;
-        this.horizontalSpread = options.horizontalSpread || 500;
-        this.verticalSpread = options.verticalSpread || 0;
-        this.angleSpread = options.angleSpread || 0;
-        this.disturbance = options.disturbance || 0;
-        this.angleDisturbance = options.disturbance || 0;
+    constructor(x, y, options, base) {
+        base = base || CompressedPile;
+        options = options || {};
+        this.transform = new Transform();
+        this.transform.position.x = x;
+        this.transform.position.y = y;
+        this.options = $.extend(true, base, options);
+
+        this.hovered = false;
+        this.hovered_index = -1;
+
         this.cards = [];
     }
 
     update(elapsed) {
-        var m = {x: Mouse.x - this.x, y: Mouse.y - this.y};
+        var m = {
+            x: Mouse.x - this.transform.position.x,
+            y: Mouse.y - this.transform.position.y
+        };
         var i = 0;
+
+        this.hovered = false;
 
         var changed = false;
         var skip = false;
-        for (var i = 0; i < this.cards.length; i ++) {
+        for (var i = 0; i < this.cards.length; i++) {
             var card = this.cards[i];
             if (card.hovered && card.mouseCollides(m)) {
                 skip = true;
+                this.hovered = true;
+                this.hovered_index = i;
             }
         }
 
         if (!skip) {
-            for (i = this.cards.length - 1; i >= 0; i --) {
+            for (i = this.cards.length - 1; i >= 0; i--) {
                 var card = this.cards[i];
                 if (card.mouseCollides(m)) {
                     if (!card.hovered) {
                         changed = true;
                     }
                     card.hovered = true;
+                    this.hovered = true;
+                    this.hovered_index = i;
                     break;
                 } else {
                     if (card.hovered) {
@@ -285,8 +399,9 @@ class CardPile {
                     }
                     card.hovered = false;
                 }
-            } i--;
-            for (; i >= 0; i --) {
+            }
+            i--;
+            for (; i >= 0; i--) {
                 if (this.cards[i].hovered) {
                     changed = true;
                 }
@@ -302,23 +417,41 @@ class CardPile {
     }
 
     updateTransforms() {
-        for (var i = 0; i < this.cards.length; i ++) {
+        var opt = this.hovered && this.options.hover.enabled ? this.options.hover : this.options;
+        for (var i = 0; i < this.cards.length; i++) {
             var card = this.cards[i];
-            card.target.position.x = map(i, 0, this.cards.length - 1, -this.horizontalSpread/2, this.horizontalSpread/2) + Math.random() * this.disturbance;
-            card.target.position.y = map(i, 0, this.cards.length - 1, -this.verticalSpread/2, this.verticalSpread/2) + Math.random() * this.disturbance;
+            card.target.position.x = map(i, 0, this.cards.length - 1,
+                    (opt.leftOnTop ? -1 : 1) * -opt.spread.x / 2,
+                    (opt.leftOnTop ? -1 : 1) * opt.spread.x / 2) +
+                Math.random() * opt.disturbance.x;
 
-            card.target.rotation = map(i, 0, this.cards.length - 1, -this.angleSpread/2, this.angleSpread/2) + Math.random() * this.angleDisturbance;
+            card.target.position.y = map(i, 0, this.cards.length - 1,
+                    -opt.spread.y / 2, opt.spread.y / 2) +
+                Math.random() * opt.disturbance.y;
+
+            card.target.rotation = map(i, 0, this.cards.length - 1, -opt.spread.angle / 2, opt.spread.angle / 2) + Math.random() * opt.disturbance.angle;
+        }
+
+        for (var i = 0; i < this.cards.length; i++) {
+            if (this.hovered) {
+                if (i < this.hovered_index) {
+                    this.cards[i].target.position.x -= opt.spreadFromHovered.left;
+                }
+                if (i > this.hovered_index) {
+                    this.cards[i].target.position.x += opt.spreadFromHovered.right;
+                }
+            }
         }
     }
 
     draw(ctx) {
         ctx.save();
-        ctx.translate(this.x, this.y);
-        for (var i = 0; i < this.cards.length; i ++) {
+        ctx.translate(this.transform.position.x, this.transform.position.y);
+        for (var i = 0; i < this.cards.length; i++) {
             var card = this.cards[i];
             card.draw(ctx);
         }
-        for (var i = 0; i < this.cards.length; i ++) {
+        for (var i = 0; i < this.cards.length; i++) {
             if (this.cards[i].hovered) {
                 this.cards[i].draw(ctx);
             }
@@ -328,19 +461,38 @@ class CardPile {
 
     addCard(card) {
         this.cards.push(card);
+        console.log(card);
+        this.updateTransforms();
+    }
+
+    removeCard(card) {
+        for (var i = 0; i < this.cards.length; i ++) {
+            if (this.cards[i] === card) {
+                this.cards.splice(i, 1);
+                break;
+            }
+        }
+        this.updateTransforms();
+    }
+
+    removeNthCard(n) {
+        this.cards.splice(n, 1);
         this.updateTransforms();
     }
 }
 
 function createCanvas() {
-    var canvas = $( "<canvas></canvas>" ).attr( "id", "canvas" )[0];
-    $( canvas ).css({
+    var canvas = $("<canvas></canvas>").attr("id", "canvas")[0];
+    $(canvas).css({
         "display": "block",
     });
-    $( canvas ).mousemove(function(event) {
+    $(canvas).mousemove(function(event) {
         var parentOffset = $(this).parent().offset();
         Mouse.x = event.pageX - parentOffset.left;
         Mouse.y = event.pageY - parentOffset.top;
+    })
+    $(canvas).on('click', function() {
+        f();
     })
     return canvas;
 }
@@ -351,8 +503,13 @@ var Mouse = {
 }
 
 $(document).ready(function() {
-    $( "html" ).css({"overflow": "hidden", "height": "100%"});
-    $( "body" ).css({"overflow": "hidden", "height": "100%"});
+    $("html").css({
+        "overflow": "hidden",
+        "height": "100%"
+    });
+    $("body").css({
+        "overflow": "hidden",
+        "height": "100%"
+    });
 
-    document.addEventListener
 });
