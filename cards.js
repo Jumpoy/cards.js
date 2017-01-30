@@ -44,6 +44,12 @@ function beginLoop() {
     loop();
 }
 
+function each(array, f) {
+    for (var i of array) {
+        f(i);
+    }
+}
+
 class Ctx {
     constructor(ctx) {
         this.raw_ctx = ctx;
@@ -107,6 +113,15 @@ class Ctx {
     drawImage(img, x, y, w, h) {
         this.raw_ctx.drawImage(img, x, y, w, h);
     }
+
+    centerText(text, x, y) {
+        var width = this.raw_ctx.measureText(text).width;
+        this.text(text, x - width / 2, y);
+    }
+
+    font(fontFace, fontSize) {
+        this.raw_ctx.font = fontSize + 'px ' + fontFace;
+    }
 }
 
 class CardTable {
@@ -147,8 +162,37 @@ class CardTable {
 
     update(elapsed) {
         this.fps = Math.floor(0.8 * this.fps + 0.2 * 1000 / elapsed);
+        var hovered = false;
+        var index = -1;
+        for (var i = 0; i < this.card_piles.length; i++) {
+            if (this.card_piles[i].hovered) {
+                hovered = true;
+                index = i;
+                break;
+            }
+        }
+        if (!hovered) {
+
+            each(this.card_piles, (card_pile) => {
+                card_pile.hovered = false;
+                card_pile.locked = false;
+            });
+        } else {
+            for (var i = 0; i < this.card_piles.length; i++) {
+                this.card_piles[i].locked = false;
+                if (i !== index) {
+                    this.card_piles[i].hovered = false;
+                    this.card_piles[i].locked = true;
+                }
+            }
+        }
+        var temp_lock = false;
         for (var card_pile of this.card_piles) {
+            if (temp_lock) {
+                card_pile.locked = true;
+            }
             card_pile.update(elapsed);
+            temp_lock = temp_lock || card_pile.hovered;
         }
     }
 
@@ -160,10 +204,13 @@ class CardTable {
             if (!card_pile.hovered)
                 card_pile.draw(this.ctx);
         }
-        for (var card_pile of this.card_piles) {
-            if (card_pile.hovered)
-                card_pile.draw(this.ctx);
-        }
+        each(this.card_piles, (card_pile) => {
+            if (!card_pile.hovered) card_pile.draw(this.ctx)
+        });
+
+        each(this.card_piles, (card_pile) => {
+            if (card_pile.hovered) card_pile.draw(this.ctx)
+        });
     }
 
     addCardPile(cardPile) {
@@ -275,6 +322,26 @@ class PictureCard extends Card {
 
     drawCard(ctx, x, y, w, h) {
         ctx.drawImage(this.img, x, y, w, h);
+    }
+}
+
+class BorderedPictureCard extends PictureCard {
+    constructor(width, height, image_address, num, anchor = "bottom") {
+        super(width, height, image_address, anchor);
+        this.num = num;
+    }
+
+    drawCard(ctx, x, y, w, h) {
+        if (this.hovered) {
+            ctx.fill('black');
+            ctx.rect(x - 5, y - 5, w + 10, h + 10);
+
+            ctx.rect(x + w / 2 - 20, y - 30, 40, 31);
+            ctx.fill('white');
+            ctx.font('Arial', 13);
+            ctx.centerText(this.num, x + w / 2, y - 12);
+        }
+        super.drawCard(ctx, x, y, w, h);
     }
 }
 
@@ -460,6 +527,7 @@ class CardPile {
 
         this.hovered = false;
         this.hovered_index = -1;
+        this.locked = false;
 
         this.cards = [];
     }
@@ -472,49 +540,55 @@ class CardPile {
         var i = 0;
 
         this.hovered = false;
+        if (!this.locked) {
 
-        var changed = false;
-        var skip = false;
-        for (var i = 0; i < this.cards.length; i++) {
-            var card = this.cards[i];
-            if (card.hovered && card.mouseCollides(m)) {
-                skip = true;
-                this.hovered = true;
-                this.hovered_index = i;
-            }
-        }
-
-        if (!skip) {
-            for (i = this.cards.length - 1; i >= 0; i--) {
+            var changed = false;
+            var skip = false;
+            for (var i = 0; i < this.cards.length; i++) {
                 var card = this.cards[i];
-                if (card.mouseCollides(m)) {
-                    if (!card.hovered) {
-                        changed = true;
-                    }
-                    card.hovered = true;
+                if (card.hovered && card.mouseCollides(m)) {
+                    skip = true;
                     this.hovered = true;
                     this.hovered_index = i;
-                    break;
-                } else {
-                    if (card.hovered) {
+                }
+            }
+
+            if (!skip) {
+                for (i = this.cards.length - 1; i >= 0; i--) {
+                    var card = this.cards[i];
+                    if (card.mouseCollides(m)) {
+                        if (!card.hovered) {
+                            changed = true;
+                        }
+                        card.hovered = true;
+                        this.hovered = true;
+                        this.hovered_index = i;
+                        break;
+                    } else {
+                        if (card.hovered) {
+                            changed = true;
+                        }
+                        card.hovered = false;
+                    }
+                }
+                i--;
+                for (; i >= 0; i--) {
+                    if (this.cards[i].hovered) {
                         changed = true;
                     }
-                    card.hovered = false;
+                    this.cards[i].hovered = false;
                 }
             }
-            i--;
-            for (; i >= 0; i--) {
-                if (this.cards[i].hovered) {
-                    changed = true;
-                }
-                this.cards[i].hovered = false;
+            each(this.cards, (card) => card.update(elapsed));
+
+            if (changed) {
+                this.updateTransforms();
             }
         }
-        for (var card of this.cards) {
-            card.update(elapsed);
-        }
-        if (changed) {
+        if (this.locked) {
             this.updateTransforms();
+
+            each(this.cards, (card) => card.update(elapsed));
         }
     }
 
@@ -528,14 +602,12 @@ class CardPile {
                         (opt.leftOnTop ? -1 : 1) * opt.spread.x * this.cards.length / 2) +
                     Math.random() * opt.disturbance.x;
 
-                card.target.position.y = map(i, 0, this.cards.length - 1,
-                        -opt.spread.y * this.cards.length / 2,
+                card.target.position.y = map(i, 0, this.cards.length - 1, -opt.spread.y * this.cards.length / 2,
                         opt.spread.y * this.cards.length / 2) +
                     Math.random() * opt.disturbance.y;
 
                 card.target.rotation = map(i, 0, this.cards.length - 1, -opt.spread.angle / 2, opt.spread.angle / 2) + Math.random() * opt.disturbance.angle;
-            }
-            else {
+            } else {
                 card.target.position.x = map(i, 0, this.cards.length - 1,
                         (opt.leftOnTop ? -1 : 1) * -opt.spread.x / 2,
                         (opt.leftOnTop ? -1 : 1) * opt.spread.x / 2) +
@@ -570,21 +642,18 @@ class CardPile {
     draw(ctx) {
         ctx.save();
         ctx.translate(this.transform.position.x, this.transform.position.y);
-        for (var i = 0; i < this.cards.length; i++) {
-            var card = this.cards[i];
-            card.draw(ctx);
-        }
-        for (var i = 0; i < this.cards.length; i++) {
-            if (this.cards[i].hovered) {
-                this.cards[i].draw(ctx);
-            }
-        }
+
+        each(this.cards, (card) => card.draw(ctx));
+
+        each(this.cards, (card) => {
+            if (card.hovered) card.draw(ctx)
+        });
+
         ctx.restore();
     }
 
     addCard(card) {
         this.cards.push(card);
-        console.log(card);
         this.updateTransforms();
     }
 

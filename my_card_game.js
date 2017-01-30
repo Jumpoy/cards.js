@@ -33,32 +33,36 @@ var secondrows = [
 
 $(document).ready(function() {
     cT = new CardTable();
-    hand = new CardPile(document.body.clientWidth/2, document.body.clientHeight-15, {}, SteadyHand);
-    firstrow = new CardPile(document.body.clientWidth/2, document.body.clientHeight/2 - 173/2 - 24, {
+    var w = document.body.clientWidth;
+    var h = document.body.clientHeight;
+    hand = new CardPile(w/3, h-15, {spread: {x: 80}}, SteadyHand);
+    firstrow = new CardPile(w/2, h/2 - 173/2 - 24, {
         spread: {
             x: 92
         }
     }, DisplayRow);
-    secondrow = new CardPile(document.body.clientWidth/2, document.body.clientHeight/2 + 173/2 + 10, {
+    secondrow = new CardPile(w/2, h/2 + 173/2 + 10, {
         spread: {
             x: 92
         }
     }, DisplayRow);
     for (var i = 0; i < 5; i ++) {
+        var img;
         if (i < 3) {
-            c = new PictureCard(108, 173, copper);
+            img = copper;
         }
         else {
-            c = new PictureCard(108, 173, estate);
+            img = estate;
         }
+        c = new PictureCard(108*1.2, 173*1.2, img);
         hand.addCard(c);
     }
     for (var link of firstrows) {
-        c = new PictureCard(108, 173, link, "center");
+        c = new BorderedPictureCard(108, 173, link, 8, "center");
         firstrow.addCard(c);
     }
     for (var link of secondrows) {
-        c = new PictureCard(108, 173, link, "center");
+        c = new BorderedPictureCard(108, 173, link, 10, "center");
         secondrow.addCard(c);
     }
     cT.addCardPile(hand);
