@@ -410,7 +410,7 @@ const DisplayRow = {
     hoveredCard: {
         enabled: true,
         defaultScale: 1,
-        scale: 1.5,
+        scale: 2,
         offset: {
             x: 0,
             y: 0,
