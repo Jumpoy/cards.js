@@ -794,6 +794,16 @@ class CardPile {
         }
     }
 
+    skipAnimations() {
+        this.updateTransforms();
+        this.cards.map((card) => {
+            card.transform.position.x = card.target.position.x;
+            card.transform.position.y = card.target.position.y;
+            card.transform.rotation = card.target.rotation;
+            card.scale = card.targetScale;
+        });
+    }
+
     draw(ctx) {
         ctx.save();
         ctx.translate(this.transform.position.x, this.transform.position.y);
