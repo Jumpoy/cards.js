@@ -140,6 +140,7 @@ $(document).ready(function() {
             if (this.parent === hand) {
                 discard.stealCard(this);
             }
+            this.grayed_out = true;
         }
         hand.addCard(c);
     }
@@ -158,6 +159,7 @@ $(document).ready(function() {
         c = new BorderedPictureCard(108, 173, link, 10, "center");
         c.onClick = function() {
             this.num --;
+            this.grayed_out = true;
         }
         secondrow.addCard(c);
     }

@@ -97,8 +97,6 @@ class CardTable {
         $("body").prepend(this.canvas);
 
         this.card_piles = [];
-        //this.moving_cards = [];
-        //this.beginLoop();
         this.fps = 0;
     }
 
@@ -307,11 +305,16 @@ class PictureCard extends Card {
     constructor(width, height, image_address, anchor = "bottom") {
         super(width, height, anchor);
         this.img = new Image();
+
         this.img.src = image_address;
     }
 
     drawCard(ctx, x, y, w, h) {
         ctx.drawImage(this.img, x, y, w, h);
+        if (this.grayed_out) {
+            ctx.fill('rgba(100, 100, 100, 0.6)');
+            ctx.rect(x, y, w, h);
+        }
     }
 }
 
