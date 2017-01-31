@@ -16,7 +16,7 @@ var firstrows = [
     'http://dominion-o-dude.herokuapp.com/static/images/scans/common/duchy.jpg',
     'http://dominion-o-dude.herokuapp.com/static/images/scans/common/province.jpg',
     'http://dominion-o-dude.herokuapp.com/static/images/scans/common/curse.jpg'
-]
+];
 
 var secondrows = [
     'http://dominion-o-dude.herokuapp.com/static/images/scans/base/moat.jpg',
@@ -29,7 +29,7 @@ var secondrows = [
     'http://dominion-o-dude.herokuapp.com/static/images/scans/base/witch.jpg',
     'http://dominion-o-dude.herokuapp.com/static/images/scans/base/festival.jpg',
     'http://dominion-o-dude.herokuapp.com/static/images/scans/base/market.jpg',
-]
+];
 
 $(document).ready(function() {
     cT = new CardTable();
@@ -45,9 +45,11 @@ $(document).ready(function() {
             x: 92
         }
     }, DisplayRow);
+    //firstrow.rect = makeRect(108, 173, "top");
     firstrow.resize = function(w, h) {
         this.transform.position.x = w/2;
-        this.transform.position.y = h/2 - 173/2 - 24;
+        this.transform.position.y = h/2 - 173/2 - 30;
+
     }
     secondrow = new CardPile(w/2, h/2 + 173/2 - 20, {
         spread: {
@@ -55,8 +57,7 @@ $(document).ready(function() {
         }
     }, DisplayRow);
     secondrow.resize = function(w, h) {
-        this.transform.position.x = w/2;
-        this.transform.position.y = h/2 + 173/2 - 20;
+        this.move(firstrow.bottom);
     }
     for (var i = 0; i < 5; i ++) {
         var img;
@@ -77,7 +78,7 @@ $(document).ready(function() {
         firstrow.addCard(c);
     }
     for (var link of secondrows) {
-        c = new BorderedPictureCard(108, 173, link, 10, "center");
+        c = new BorderedPictureCard(108, 173, link, 10, "top");
         c.onClick = function() {
             this.num --;
         }
@@ -86,4 +87,6 @@ $(document).ready(function() {
     cT.addCardPile(hand);
     cT.addCardPile(firstrow);
     cT.addCardPile(secondrow);
+
+    cT.beginLoop();
 });
