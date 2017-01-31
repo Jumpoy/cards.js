@@ -780,6 +780,11 @@ class CardPile {
         this.addCard(card);
     }
 
+    empty() {
+        this.cards = [];
+        this.updateTransforms();
+    }
+
     addCard(card) {
         if (this.rect == null || this.rect === undefined) {
             this.rect = makeRect(card.width, card.height, card.anchor);
