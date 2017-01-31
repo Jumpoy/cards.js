@@ -97,6 +97,7 @@ class CardTable {
         $("body").prepend(this.canvas);
 
         this.card_piles = [];
+        //this.moving_cards = [];
         //this.beginLoop();
         this.fps = 0;
     }
@@ -763,6 +764,20 @@ class CardPile {
         });
 
         ctx.restore();
+    }
+
+    stealCard(card) {
+        card.parent.removeCard(card);
+        var real = {
+            x: card.parent.transform.position.x + card.transform.position.x,
+            y: card.parent.transform.position.y + card.transform.position.y
+        }
+        real.x -= this.transform.position.x;
+        real.y -= this.transform.position.y;
+
+        card.transform.position.x = real.x;
+        card.transform.position.y = real.y;
+        this.addCard(card);
     }
 
     addCard(card) {

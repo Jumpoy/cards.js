@@ -5,6 +5,8 @@ var hand;
 var firstrow;
 var secondrow;
 
+var discard;
+
 var playerlist;
 
 var copper = 'http://dominion-o-dude.herokuapp.com/static/images/scans/common/copper.jpg';
@@ -60,16 +62,39 @@ class PlayerInfoCard extends Card {
     }
 }
 
+function copy(obj) {
+    return $.extend(true, {}, obj);
+}
+
 $(document).ready(function() {
 
     // Initialise card table
     cT = new CardTable();
 
     // Create hand
-    hand = new CardPile(0, 0, {spread: {x: 80}}, $.extend(true, {}, SteadyHand));
+    hand = new CardPile(0, 0, {spread: {x: 80}}, copy(SteadyHand));
     hand.resize = function(w, h) {
-        this.transform.position.x = w/3;
-        this.transform.position.y = h-15;
+        this.transform.position.x = w/4;
+        this.transform.position.y = h;
+    }
+
+    // Create discard
+    discard = new CardPile(0, 0, {
+
+        hover: {
+            spread: {
+                perCard: true,
+                x: 60,
+
+            },
+            spreadFromHovered: {
+                right: 60,
+            },
+        }
+    }, CompressedPile);
+    discard.resize = function(w, h) {
+        this.transform.position.x = w * 4/5;
+        this.transform.position.y = h;
     }
 
     // Create first row
@@ -77,7 +102,7 @@ $(document).ready(function() {
         spread: {
             x: 108
         }
-    }, $.extend(true, {}, DisplayRow));
+    }, copy(DisplayRow));
     firstrow.resize = function(w, h) {
         this.transform.position.x = w/2;
         this.transform.position.y = h/2 - 173/2 - 30;
@@ -88,7 +113,7 @@ $(document).ready(function() {
         spread: {
             x: 108
         }
-    }, $.extend(true, {}, DisplayRow));
+    }, copy(DisplayRow));
     secondrow.resize = function(w, h) {
         // Puts the BOTTOM of the first row at the TOP of this row
         this.move(firstrow.bottom, "top");
@@ -100,7 +125,7 @@ $(document).ready(function() {
             x: 215
         },
         hoveredCard: {enabled: false}
-    }, $.extend(true, {}, DisplayRow));
+    }, copy(DisplayRow));
     playerlist.resize = function(w, h) {
         this.transform.position.x = w/2;
         this.transform.position.y = 0;
@@ -112,6 +137,11 @@ $(document).ready(function() {
         if (i < 3) img = copper;
         else img = estate;
         c = new PictureCard(108*1.2, 173*1.2, img);
+        c.onClick = function() {
+            if (this.parent === hand) {
+                discard.stealCard(this);
+            }
+        }
         hand.addCard(c);
     }
 
@@ -144,6 +174,7 @@ $(document).ready(function() {
 
     // Add card piles to card table
     cT.addCardPile(hand);
+    cT.addCardPile(discard);
     cT.addCardPile(firstrow);
     cT.addCardPile(secondrow);
     cT.addCardPile(playerlist);
