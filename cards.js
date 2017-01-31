@@ -551,6 +551,28 @@ class Rect {
             y: this.y + this.h
         }
     }
+
+    get center() {
+        return {
+            x: this.x + this.w/2,
+            y: this.y + this.h/2
+        }
+    }
+
+    relative(rel) {
+        switch(rel) {
+            case "center":
+                return this.center;
+            case "top":
+                return this.top;
+            case "bottom":
+                return this.bottom;
+            case "left":
+                return this.left;
+            case "right":
+                return this.right;
+        }
+    }
 }
 
 class CardPile {
@@ -577,8 +599,11 @@ class CardPile {
         this.rect = null;
     }
 
-    move(pos) {
+    move(pos, relative="center") {
         this.transform.position = pos;
+        var p = this.rect.relative(relative);
+        this.transform.position.x -= p.x;
+        this.transform.position.y -= p.y;
     }
 
     get left() {

@@ -32,44 +32,49 @@ var secondrows = [
 ];
 
 $(document).ready(function() {
+
+    // Initialise card table
     cT = new CardTable();
-    var w = document.body.clientWidth;
-    var h = document.body.clientHeight;
-    hand = new CardPile(w/3, h-15, {spread: {x: 80}}, SteadyHand);
+
+    // Create hand
+    hand = new CardPile(0, 0, {spread: {x: 80}}, SteadyHand);
     hand.resize = function(w, h) {
         this.transform.position.x = w/3;
         this.transform.position.y = h-15;
     }
-    firstrow = new CardPile(w/2, h/2 - 173/2 - 24, {
+
+    // Create first row
+    firstrow = new CardPile(0, 0, {
         spread: {
             x: 92
         }
     }, DisplayRow);
-    //firstrow.rect = makeRect(108, 173, "top");
     firstrow.resize = function(w, h) {
         this.transform.position.x = w/2;
         this.transform.position.y = h/2 - 173/2 - 30;
-
     }
-    secondrow = new CardPile(w/2, h/2 + 173/2 - 20, {
+
+    // Create second row
+    secondrow = new CardPile(0, 0, {
         spread: {
             x: 92
         }
     }, DisplayRow);
     secondrow.resize = function(w, h) {
-        this.move(firstrow.bottom);
+        // Puts the BOTTOM of the first row at the TOP of this row
+        this.move(firstrow.bottom, "top");
     }
+
+    // Add cards to hand
     for (var i = 0; i < 5; i ++) {
         var img;
-        if (i < 3) {
-            img = copper;
-        }
-        else {
-            img = estate;
-        }
+        if (i < 3) img = copper;
+        else img = estate;
         c = new PictureCard(108*1.2, 173*1.2, img);
         hand.addCard(c);
     }
+
+    // Add cards for first row
     for (var link of firstrows) {
         c = new BorderedPictureCard(108, 173, link, 10, "center");
         c.onClick = function() {
@@ -77,16 +82,21 @@ $(document).ready(function() {
         }
         firstrow.addCard(c);
     }
+
+    // Add cards for second row
     for (var link of secondrows) {
-        c = new BorderedPictureCard(108, 173, link, 10, "top");
+        c = new BorderedPictureCard(108, 173, link, 10, "center");
         c.onClick = function() {
             this.num --;
         }
         secondrow.addCard(c);
     }
+
+    // Add card piles to card table
     cT.addCardPile(hand);
     cT.addCardPile(firstrow);
     cT.addCardPile(secondrow);
 
+    // Begin main loop
     cT.beginLoop();
 });
