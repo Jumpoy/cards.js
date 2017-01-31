@@ -5,6 +5,8 @@ var hand;
 var firstrow;
 var secondrow;
 
+var playerlist;
+
 var copper = 'http://dominion-o-dude.herokuapp.com/static/images/scans/common/copper.jpg';
 var estate = 'http://dominion-o-dude.herokuapp.com/static/images/scans/common/estate.jpg';
 
@@ -31,13 +33,40 @@ var secondrows = [
     'http://dominion-o-dude.herokuapp.com/static/images/scans/base/market.jpg',
 ];
 
+class PlayerInfoCard extends Card {
+    constructor(anchor, name, info) {
+        super(210, 143, anchor);
+        this.name = name;
+        this.info = info;
+    }
+
+    drawCard(ctx, x, y, w, h) {
+        ctx.stroke('black');
+        ctx.fill('#15f698');
+        ctx.rect(x, y, w, h);
+        ctx.strokeRect(x, y, w, h);
+        ctx.fill('black');
+        ctx.font('sans-serif', 32);
+        y += 15;
+        ctx.centerText(this.name, x + w/2, y + 30);
+        ctx.font('sans-serif', 13);
+        var myString = 'Deck: ' + this.info.deck + ' | Hand: ' + this.info.hand + ' | VP: ' + this.info.vp;
+        ctx.centerText(myString, x + w/2, y + 58);
+        ctx.font('sans-serif', 16)
+        ctx.centerText(this.info.status, x + w/2, y + 83);
+        ctx.font('sans-serif', 13);
+        myString = 'Actions: ' + this.info.actions + ' | Buys: ' + this.info.buys + ' | Gold: ' + this.info.gold;
+        ctx.centerText(myString, x + w/2, y + 108);
+    }
+}
+
 $(document).ready(function() {
 
     // Initialise card table
     cT = new CardTable();
 
     // Create hand
-    hand = new CardPile(0, 0, {spread: {x: 80}}, SteadyHand);
+    hand = new CardPile(0, 0, {spread: {x: 80}}, $.extend(true, {}, SteadyHand));
     hand.resize = function(w, h) {
         this.transform.position.x = w/3;
         this.transform.position.y = h-15;
@@ -46,9 +75,9 @@ $(document).ready(function() {
     // Create first row
     firstrow = new CardPile(0, 0, {
         spread: {
-            x: 92
+            x: 108
         }
-    }, DisplayRow);
+    }, $.extend(true, {}, DisplayRow));
     firstrow.resize = function(w, h) {
         this.transform.position.x = w/2;
         this.transform.position.y = h/2 - 173/2 - 30;
@@ -57,12 +86,24 @@ $(document).ready(function() {
     // Create second row
     secondrow = new CardPile(0, 0, {
         spread: {
-            x: 92
+            x: 108
         }
-    }, DisplayRow);
+    }, $.extend(true, {}, DisplayRow));
     secondrow.resize = function(w, h) {
         // Puts the BOTTOM of the first row at the TOP of this row
         this.move(firstrow.bottom, "top");
+    }
+
+    // Initialise player list
+    playerlist = new CardPile(0, 0, {
+        spread: {
+            x: 215
+        },
+        hoveredCard: {enabled: false}
+    }, $.extend(true, {}, DisplayRow));
+    playerlist.resize = function(w, h) {
+        this.transform.position.x = w/2;
+        this.transform.position.y = 0;
     }
 
     // Add cards to hand
@@ -92,10 +133,20 @@ $(document).ready(function() {
         secondrow.addCard(c);
     }
 
+    for (var i of ['Nick', 'James', 'Jash']) {
+        c = new PlayerInfoCard("top", i, {
+            deck: 5, hand: 5, vp: 3,
+            status: 'Currently in buy phase',
+            actions: 0, buys: 1, gold: 4
+        });
+        playerlist.addCard(c);
+    }
+
     // Add card piles to card table
     cT.addCardPile(hand);
     cT.addCardPile(firstrow);
     cT.addCardPile(secondrow);
+    cT.addCardPile(playerlist);
 
     // Begin main loop
     cT.beginLoop();

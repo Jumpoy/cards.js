@@ -704,8 +704,8 @@ class CardPile {
         for (var i = 0; i < this.cards.length; i++) {
             var card = this.cards[i];
             if (opt.spread.perCard) {
-                var spreadW = opt.spread.x * this.cards.length;
-                var spreadH = opt.spread.y * this.cards.length;
+                var spreadW = opt.spread.x * (this.cards.length-1);
+                var spreadH = opt.spread.y * (this.cards.length-1);
 
                 var left = -spreadW / 2;
                 var right = spreadW / 2;
