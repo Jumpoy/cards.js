@@ -841,10 +841,14 @@ class CardPile {
                 break;
             }
         }
+        if (card.hovered) this.hovered = false;
+        card.hovered = false;
         this.updateTransforms();
     }
 
     removeNthCard(n) {
+        if (this.cards[n].hovered) this.hovered = false;
+        this.cards[n].hovered = false;
         this.cards.splice(n, 1);
         this.updateTransforms();
     }
