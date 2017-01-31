@@ -72,15 +72,14 @@ $(document).ready(function() {
     cT = new CardTable();
 
     // Create hand
-    hand = new CardPile(0, 0, {spread: {x: 80}}, copy(SteadyHand));
+    hand = new CardPile(0, 0, 108*1.2, 173*1.2, "bottom", {spread: {x: 80}}, copy(SteadyHand));
     hand.resize = function(w, h) {
         this.transform.position.x = w/4;
         this.transform.position.y = h;
     }
 
     // Create discard
-    discard = new CardPile(0, 0, {
-
+    discard = new CardPile(0, 0, 108*1.2, 173*1.2, "bottom", {
         hover: {
             spread: {
                 perCard: true,
@@ -98,7 +97,7 @@ $(document).ready(function() {
     }
 
     // Create first row
-    firstrow = new CardPile(0, 0, {
+    firstrow = new CardPile(0, 0, 108, 173, "center", {
         spread: {
             x: 108
         }
@@ -109,7 +108,7 @@ $(document).ready(function() {
     }
 
     // Create second row
-    secondrow = new CardPile(0, 0, {
+    secondrow = new CardPile(0, 0, 108, 173, "center", {
         spread: {
             x: 108
         }
@@ -120,7 +119,7 @@ $(document).ready(function() {
     }
 
     // Initialise player list
-    playerlist = new CardPile(0, 0, {
+    playerlist = new CardPile(0, 0, 210, 143, "top", {
         spread: {
             x: 215
         },

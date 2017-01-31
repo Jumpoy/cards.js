@@ -282,6 +282,10 @@ class Card {
     }
 }
 
+class BottomCard extends Card {
+
+}
+
 class NumberedCard extends Card {
     constructor(width, height, num, anchor = "bottom") {
         super(width, height, anchor);
@@ -577,9 +581,17 @@ class Rect {
 }
 
 class CardPile {
-    constructor(x, y, options, base) {
+    constructor(x, y, width, height, anchor, options, base) {
         this.x = x;
         this.y = y;
+        this.width = width;
+        this.height = height;
+
+        this.rect = makeRect(width, height, anchor);
+        this.baseCard = new BottomCard(width, height, anchor);
+
+        this.baseCard.drawCard = this.drawOutline;
+
         base = base || CompressedPile;
         options = options || {};
         this.transform = new Transform();
@@ -596,18 +608,29 @@ class CardPile {
         this.onClick = null;
 
         this.parent = null;
+    }
 
-        this.rect = null;
+    drawOutline(ctx, x, y, w, h) {
+        ctx.stroke('grey');
+        ctx.strokeRect(x, y, w, h);
     }
 
     move(pos, relative="center") {
         this.transform.position = pos;
-        var p = this.rect.relative(relative);
-        this.transform.position.x -= p.x;
-        this.transform.position.y -= p.y;
+        if (this.rect) {
+            var p = this.rect.relative(relative);
+            this.transform.position.x -= p.x;
+            this.transform.position.y -= p.y;
+        }
     }
 
     get left() {
+        if (!this.rect) {
+            return {
+                x: this.transform.position.x,
+                y: this.transform.position.y
+            }
+        }
         return {
             x: this.transform.position.x + this.rect.left.x,
             y: this.transform.position.y + this.rect.left.y
@@ -615,6 +638,12 @@ class CardPile {
     }
 
     get right() {
+        if (!this.rect) {
+            return {
+                x: this.transform.position.x,
+                y: this.transform.position.y
+            }
+        }
         return {
             x: this.transform.position.x + this.rect.right.x,
             y: this.transform.position.y + this.rect.right.y
@@ -622,6 +651,12 @@ class CardPile {
     }
 
     get top() {
+        if (!this.rect) {
+            return {
+                x: this.transform.position.x,
+                y: this.transform.position.y
+            }
+        }
         return {
             x: this.transform.position.x + this.rect.top.x,
             y: this.transform.position.y + this.rect.top.y
@@ -629,6 +664,12 @@ class CardPile {
     }
 
     get bottom() {
+        if (!this.rect) {
+            return {
+                x: this.transform.position.x,
+                y: this.transform.position.y
+            }
+        }
         return {
             x: this.transform.position.x + this.rect.bottom.x,
             y: this.transform.position.y + this.rect.bottom.y
@@ -757,6 +798,8 @@ class CardPile {
         ctx.save();
         ctx.translate(this.transform.position.x, this.transform.position.y);
 
+        this.baseCard.draw(ctx);
+
         this.cards.map((card) => card.draw(ctx));
 
         this.cards.map((card) => {
@@ -786,9 +829,6 @@ class CardPile {
     }
 
     addCard(card) {
-        if (this.rect == null || this.rect === undefined) {
-            this.rect = makeRect(card.width, card.height, card.anchor);
-        }
         this.cards.push(card);
         card.parent = this;
         this.updateTransforms();
