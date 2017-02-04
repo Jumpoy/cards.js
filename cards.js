@@ -126,7 +126,7 @@ class CardTable {
     }
 
     resize(w, h) {
-        this.card_piles.map((card_pile) => card_pile.resize(w, h));
+        this.card_piles.map((card_pile) => card_pile._resize(w, h));
     }
 
     update(elapsed) {
@@ -613,11 +613,15 @@ class Rect {
 }
 
 class TextPile {
-    constructor() {
+    constructor(x, y) {
         this.texts = [];
+        this.transform = new Transform();
+        this.transform.position.x = x;
+        this.transform.position.y = y;
     }
 
     draw(ctx) {
+        ctx.translate(this.transform.position.x, this.transform.position.y);
         this.texts.map((t) => t.draw(ctx));
     }
 
@@ -640,14 +644,28 @@ class TextPile {
         }
     }
 
+    move(pos, relative="center") {
+        this.transform.position = pos;
+        if (this.rect) {
+            var p = this.rect.relative(relative);
+            this.transform.position.x -= p.x;
+            this.transform.position.y -= p.y;
+        }
+    }
+
     removeNthText(n) {
         this.texts.splice(n, 1);
     }
 
     mousePressed() {}
 
-    resize(w, h) {
+    _resize(w, h) {
+        this.resize(w, h);
         this.texts.map((t) => t.resize(w, h));
+    }
+
+    resize(w, h) {
+
     }
 }
 
@@ -780,6 +798,10 @@ class CardPile {
             x: this.transform.position.x + this.rect.bottom.x,
             y: this.transform.position.y + this.rect.bottom.y
         }
+    }
+
+    _resize(w, h) {
+        this.resize(w, h);
     }
 
     resize(w, h) {
