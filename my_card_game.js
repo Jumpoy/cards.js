@@ -36,8 +36,8 @@ var secondrows = [
 ];
 
 class PlayerInfoCard extends Card {
-    constructor(anchor, name, info) {
-        super(210, 143, anchor);
+    constructor(name, info) {
+        super();
         this.name = name;
         this.info = info;
     }
@@ -72,9 +72,9 @@ $(document).ready(function() {
     cT = new CardTable();
 
     // Create hand
-    hand = new CardPile(0, 0, 108*1.2, 173*1.2, "bottom", {spread: {x: 80}}, copy(SteadyHand));
+    hand = new CardPile(0, 0, 108*1.2, 173*1.2, "bottom", {spread: {centered: false, x: 80}}, copy(SteadyHand));
     hand.resize = function(w, h) {
-        this.transform.position.x = w/4;
+        this.transform.position.x = w/10;
         this.transform.position.y = h;
     }
 
@@ -135,7 +135,7 @@ $(document).ready(function() {
         var img;
         if (i < 3) img = copper;
         else img = estate;
-        c = new PictureCard(108*1.2, 173*1.2, img);
+        c = new PictureCard( img);
         c.onClick = function() {
             if (this.parent === hand) {
                 discard.stealCard(this);
@@ -147,7 +147,7 @@ $(document).ready(function() {
 
     // Add cards for first row
     for (var link of firstrows) {
-        c = new BorderedPictureCard(108, 173, link, 10, "center");
+        c = new BorderedPictureCard( link, 10, "center");
         c.onClick = function() {
             this.num --;
         }
@@ -156,7 +156,7 @@ $(document).ready(function() {
 
     // Add cards for second row
     for (var link of secondrows) {
-        c = new BorderedPictureCard(108, 173, link, 10, "center");
+        c = new BorderedPictureCard( link, 10, "center");
         c.onClick = function() {
             this.num --;
             this.grayed_out = true;
@@ -165,7 +165,7 @@ $(document).ready(function() {
     }
 
     for (var i of ['Nick', 'James', 'Jash']) {
-        c = new PlayerInfoCard("top", i, {
+        c = new PlayerInfoCard(i, {
             deck: 5, hand: 5, vp: 3,
             status: 'Currently in buy phase',
             actions: 0, buys: 1, gold: 4

@@ -76,6 +76,7 @@ class Ctx {
     }
 
     drawImage(img, x, y, w, h) {
+        //console.log(img, img.src);
         this.raw_ctx.drawImage(img, x, y, w, h);
     }
 
@@ -193,17 +194,20 @@ class CardTable {
 }
 
 class Card {
-    constructor(width, height, anchor = "bottom") {
-        this.width = width;
-        this.height = height;
-        this.anchor = anchor;
+    constructor() {
+        this.size = {
+            width: 0,
+            height: 0,
+        };
+        this.targetSize = {
+            width: 0,
+            height: 0,
+        };
+        this.anchor = 'bottom';
 
         this.transform = new Transform();
         this.target = new Transform();
         this.hovered = false;
-
-        this.scale = 1;
-        this.targetScale = 1;
 
         this.parent = null;
 
@@ -212,8 +216,8 @@ class Card {
 
     mouseCollides(mouse) {
         var anch = this.adjustAnchor();
-        if (this.transform.position.x < mouse.x - anch.x && mouse.x - anch.x < this.transform.position.x + this.width * this.scale) {
-            if (this.transform.position.y < mouse.y - anch.y && mouse.y - anch.y < this.transform.position.y + this.height * this.scale) {
+        if (this.transform.position.x < mouse.x - anch.x && mouse.x - anch.x < this.transform.position.x + this.size.width) {
+            if (this.transform.position.y < mouse.y - anch.y && mouse.y - anch.y < this.transform.position.y + this.size.height) {
                 return true;
             }
         }
@@ -224,29 +228,29 @@ class Card {
         var x, y;
         switch (this.anchor) {
             case "bottom":
-                x = -this.width / 2;
-                y = -this.height;
+                x = -this.size.width / 2;
+                y = -this.size.height;
                 break;
             case "center":
-                x = -this.width / 2;
-                y = -this.height / 2;
+                x = -this.size.width / 2;
+                y = -this.size.height / 2;
                 break;
             case "top":
-                x = -this.width / 2;
+                x = -this.size.width / 2;
                 y = 0;
                 break;
             case "left":
                 x = 0;
-                y = -this.height / 2;
+                y = -this.size.height / 2;
                 break;
             case "right":
-                x = this.width;
-                y = -this.height / 2;
+                x = this.size.width;
+                y = -this.size.height / 2;
                 break;
         }
         return {
-            x: x * this.scale,
-            y: y * this.scale
+            x: x,
+            y: y
         };
     }
 
@@ -255,7 +259,7 @@ class Card {
         ctx.translate(this.transform.position.x, this.transform.position.y);
         ctx.rotate(this.transform.rotation);
         var anch = this.adjustAnchor();
-        this.drawCard(ctx, anch.x, anch.y, this.width * this.scale, this.height * this.scale);
+        this.drawCard(ctx, anch.x, anch.y, this.size.width, this.size.height);
         ctx.restore();
     }
 
@@ -270,7 +274,9 @@ class Card {
         this.transform.position.x = 0.15 * this.target.position.x + 0.85 * this.transform.position.x;
         this.transform.position.y = 0.15 * this.target.position.y + 0.85 * this.transform.position.y;
         this.transform.rotation = 0.15 * this.target.rotation + 0.85 * this.transform.rotation;
-        this.scale = 0.15 * this.targetScale + 0.85 * this.scale;
+        //this.scale = 0.15 * this.targetScale + 0.85 * this.scale;
+        this.size.width = 0.15 * this.targetSize.width + 0.85 * this.size.width;
+        this.size.height = 0.15 * this.targetSize.height + 0.85 * this.size.height;
     }
 
     mousePressed() {
@@ -285,8 +291,8 @@ class BottomCard extends Card {
 }
 
 class NumberedCard extends Card {
-    constructor(width, height, num, anchor = "bottom") {
-        super(width, height, anchor);
+    constructor(num) {
+        super();
         this.num = num;
     }
 
@@ -302,8 +308,8 @@ class NumberedCard extends Card {
 }
 
 class PictureCard extends Card {
-    constructor(width, height, image_address, anchor = "bottom") {
-        super(width, height, anchor);
+    constructor( image_address) {
+        super();
         this.img = new Image();
 
         this.img.src = image_address;
@@ -319,8 +325,8 @@ class PictureCard extends Card {
 }
 
 class BorderedPictureCard extends PictureCard {
-    constructor(width, height, image_address, num, anchor = "bottom") {
-        super(width, height, image_address, anchor);
+    constructor( image_address, num) {
+        super(image_address);
         this.num = num;
     }
 
@@ -361,6 +367,7 @@ class Transform {
 const CompressedPile = {
     spread: {
         perCard: false,
+        centered: true,
         x: 0,
         y: 0,
         angle: 0,
@@ -382,6 +389,7 @@ const CompressedPile = {
         },
         enabled: true,
         spread: {
+            centered: true,
             x: 200,
             y: 0,
             angle: 0,
@@ -405,6 +413,7 @@ const CompressedPile = {
 
 const HandPile = {
     spread: {
+        centered: true,
         perCard: false,
         x: 500,
         y: 0,
@@ -427,6 +436,7 @@ const HandPile = {
         },
         enabled: false,
         spread: {
+            centered: true,
             x: 200,
             y: 0,
             angle: 0,
@@ -450,6 +460,7 @@ const HandPile = {
 
 const DisplayRow = {
     spread: {
+        centered: true,
         perCard: true,
         x: 0,
         y: 0,
@@ -480,6 +491,7 @@ const DisplayRow = {
 
 const SteadyHand = {
     spread: {
+        centered: true,
         perCard: true,
         x: 60,
         y: 0,
@@ -589,6 +601,8 @@ class CardPile {
         this.y = y;
         this.width = width;
         this.height = height;
+
+        this.anchor = anchor;
 
         this.rect = makeRect(width, height, anchor);
         this.baseCard = new BottomCard(width, height, anchor);
@@ -752,8 +766,15 @@ class CardPile {
                 var spreadW = opt.spread.x * (this.cards.length-1);
                 var spreadH = opt.spread.y * (this.cards.length-1);
 
-                var left = -spreadW / 2;
-                var right = spreadW / 2;
+                if (opt.spread.centered) {
+                    var left = -spreadW / 2;
+                    var right = spreadW / 2;
+                } else {
+                    var right = spreadW;
+                    var left = 0;
+                }
+
+
                 card.target.position.x = map(i, 0, this.cards.length - 1,
                         (opt.leftOnTop ? -1 : 1) * left,
                         (opt.leftOnTop ? -1 : 1) * right) +
@@ -788,11 +809,13 @@ class CardPile {
                 }
             }
             if (this.cards[i].hovered && this.options.hoveredCard.enabled) {
-                this.cards[i].targetScale = this.options.hoveredCard.scale;
+                this.cards[i].targetSize.width = this.width * this.options.hoveredCard.scale;
+                this.cards[i].targetSize.height = this.height * this.options.hoveredCard.scale;
                 this.cards[i].target.position.x += this.options.hoveredCard.offset.x;
                 this.cards[i].target.position.y += this.options.hoveredCard.offset.y;
             } else if (this.options.hoveredCard.enabled) {
-                this.cards[i].targetScale = this.options.hoveredCard.defaultScale;
+                this.cards[i].targetSize.width = this.width * this.options.hoveredCard.defaultScale;
+                this.cards[i].targetSize.height = this.height * this.options.hoveredCard.defaultScale;
             }
         }
     }
@@ -803,7 +826,8 @@ class CardPile {
             card.transform.position.x = card.target.position.x;
             card.transform.position.y = card.target.position.y;
             card.transform.rotation = card.target.rotation;
-            card.scale = card.targetScale;
+            card.size.width = card.targetSize.width;
+            card.size.height = card.targetSize.height;
         });
     }
 
@@ -842,6 +866,11 @@ class CardPile {
     }
 
     addCard(card) {
+        card.anchor = this.anchor;
+        card.size.width = this.width;
+        card.size.height = this.height;
+        card.targetSize.width = this.width;
+        card.targetSize.height = this.height;
         this.cards.push(card);
         card.parent = this;
         this.updateTransforms();
