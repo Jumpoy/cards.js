@@ -400,10 +400,11 @@ class BorderedPictureCard extends PictureCard {
     constructor( image_address, num) {
         super(image_address);
         this.num = num;
+        this.border_active = true;
     }
 
     drawCard(ctx, x, y, w, h) {
-        if (this.hovered) {
+        if (this.hovered && this.border_active) {
             ctx.fill('black');
             ctx.rect(x - 5, y - 5, w + 10, h + 10);
 
