@@ -688,7 +688,12 @@ class CardPile {
         this.anchor = anchor;
 
         this.rect = makeRect(width, height, anchor);
-        this.baseCard = new BottomCard(width, height, anchor);
+        this.baseCard = new BottomCard();
+        this.baseCard.anchor = this.anchor;
+        this.baseCard.size.width = this.width;
+        this.baseCard.size.height = this.height;
+        this.baseCard.targetSize.width = this.width;
+        this.baseCard.targetSize.height = this.height;
 
         this.baseCard.drawCard = this.drawOutline;
 
@@ -711,6 +716,7 @@ class CardPile {
     }
 
     drawOutline(ctx, x, y, w, h) {
+        //console.log('test');
         ctx.stroke('grey');
         ctx.strokeRect(x, y, w, h);
     }
