@@ -214,37 +214,42 @@ class Card {
     }
 
     get left() {
+        var anch = this.adjustAnchor();
         return {
-            x: this.transform.position.x,
-            y: this.transform.position.y + this.size.height / 2
+            x: this.transform.position.x + anch.x,
+            y: this.transform.position.y + anch.y + this.size.height / 2
         }
     }
 
     get right() {
+        var anch = this.adjustAnchor();
         return {
-            x: this.transform.position.x + this.size.width,
-            y: this.transform.position.y + this.size.height / 2
+            x: this.transform.position.x + anch.x + this.size.width,
+            y: this.transform.position.y + anch.y + this.size.height / 2
         }
     }
 
     get top() {
+        var anch = this.adjustAnchor();
         return {
-            x: this.transform.position.x + this.size.width / 2,
-            y: this.transform.position.y
+            x: this.transform.position.x + anch.x + this.size.width / 2,
+            y: this.transform.position.y + anch.y
         }
     }
 
     get bottom() {
+        var anch = this.adjustAnchor();
         return {
-            x: this.transform.position.x + this.size.width / 2,
-            y: this.transform.position.y + this.size.height
+            x: this.transform.position.x + anch.x + this.size.width / 2,
+            y: this.transform.position.y + anch.y + this.size.height
         }
     }
 
     get center() {
+        var anch = this.adjustAnchor();
         return {
-            x: this.transform.position.x + this.size.width / 2,
-            y: this.transform.position.y + this.size.height / 2
+            x: this.transform.position.x + anch.x + this.size.width / 2,
+            y: this.transform.position.y + anch.y + this.size.height / 2
         }
     }
 
