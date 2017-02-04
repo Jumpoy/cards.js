@@ -769,9 +769,12 @@ class CardPile {
                 if (opt.spread.centered) {
                     var left = -spreadW / 2;
                     var right = spreadW / 2;
-                } else {
+                } else if (!opt.spread.fromRight) {
                     var right = spreadW;
                     var left = 0;
+                } else {
+                    var left = spreadW;
+                    var right = 0;
                 }
 
 

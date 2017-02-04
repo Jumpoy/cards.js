@@ -82,17 +82,21 @@ $(document).ready(function() {
     discard = new CardPile(0, 0, 108*1.2, 173*1.2, "bottom", {
         hover: {
             spread: {
+                centered: false,
+                fromRight: true,
                 perCard: true,
-                x: 60,
+                x: -60,
+                leftOnTop: true
 
             },
             spreadFromHovered: {
-                right: 60,
+                right: 70,
+                //left: 20
             },
         }
     }, CompressedPile);
     discard.resize = function(w, h) {
-        this.transform.position.x = w * 4/5;
+        this.transform.position.x = w * 9/10;
         this.transform.position.y = h;
     }
 
