@@ -11,6 +11,8 @@ var buttons;
 
 var playerlist;
 
+var textpile;
+
 var copper = 'http://dominion-o-dude.herokuapp.com/static/images/scans/common/copper.jpg';
 var estate = 'http://dominion-o-dude.herokuapp.com/static/images/scans/common/estate.jpg';
 
@@ -72,6 +74,12 @@ $(document).ready(function() {
 
     // Initialise card table
     cT = new CardTable();
+
+    // Create a textpile for testing
+    textpile = new TextPile();
+
+    var t = new Text('hello', 0, 10, 'Arial', 15);
+    textpile.addText(t);
 
     // Create hand
     hand = new CardPile(0, 0, 108*1.2, 173*1.2, "bottom", {spread: {centered: false, x: 80}}, copy(SteadyHand));
@@ -204,6 +212,8 @@ $(document).ready(function() {
     cT.addCardPile(secondrow);
     cT.addCardPile(playerlist);
     cT.addCardPile(buttons);
+
+    cT.addCardPile(textpile);
 
     // Begin main loop
     cT.beginLoop();

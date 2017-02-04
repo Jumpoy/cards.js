@@ -143,7 +143,6 @@ class CardTable {
             }
         }
         if (!hovered) {
-
             this.card_piles.map((card_pile) => {
                 card_pile.hovered = false;
                 card_pile.locked = false;
@@ -173,11 +172,11 @@ class CardTable {
 
 
         this.card_piles.map((card_pile) => {
-            if (!card_pile.hovered) card_pile.draw(this.ctx)
+            if (!card_pile.hovered) card_pile.draw(this.ctx);
         });
 
         this.card_piles.map((card_pile) => {
-            if (card_pile.hovered) card_pile.draw(this.ctx)
+            if (card_pile.hovered) card_pile.draw(this.ctx);
         });
     }
 
@@ -188,7 +187,7 @@ class CardTable {
 
     mousePressed() {
         this.card_piles.map((card_pile) => {
-            if (card_pile.hovered) card_pile.mousePressed()
+            if (card_pile.hovered) card_pile.mousePressed();
         });
     }
 }
@@ -609,6 +608,72 @@ class Rect {
                 return this.left;
             case "right":
                 return this.right;
+        }
+    }
+}
+
+class TextPile {
+    constructor() {
+        this.texts = [];
+    }
+
+    draw(ctx) {
+        this.texts.map((t) => t.draw(ctx));
+    }
+
+    empty() {
+        this.texts = [];
+    }
+
+    addText(t) {
+        this.texts.push(t);
+    }
+
+    update() {}
+
+    removeText(t) {
+        for (var i = 0; i < this.texts.length; i ++) {
+            if (this.texts[i] === t) {
+                this.texts.splice(i, 1);
+                break;
+            }
+        }
+    }
+
+    removeNthText(n) {
+        this.texts.splice(n, 1);
+    }
+
+    mousePressed() {}
+
+    resize(w, h) {
+        this.texts.map((t) => t.resize(w, h));
+    }
+}
+
+class Text {
+    constructor(text, x, y, font, size, centered=true) {
+        this.text = text;
+        this.transform = new Transform();
+        this.transform.position.x = x;
+        this.transform.position.y = y;
+
+        this.font = font;
+        this.size = size;
+        this.centered = centered;
+    }
+
+    resize(w, h) {
+
+    }
+
+    draw(ctx) {
+        console.log('drawing', this.text);
+        ctx.font(this.font, this.size);
+        if (this.centered) {
+            ctx.centerText(this.text, this.transform.position.x, this.transform.position.y);
+        } else {
+            ctx.text(this.text, this.transform.position.x, this.transform.position.y);
         }
     }
 }
