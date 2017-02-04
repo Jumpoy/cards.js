@@ -7,6 +7,8 @@ var secondrow;
 
 var discard;
 
+var buttons;
+
 var playerlist;
 
 var copper = 'http://dominion-o-dude.herokuapp.com/static/images/scans/common/copper.jpg';
@@ -134,6 +136,24 @@ $(document).ready(function() {
         this.transform.position.y = 0;
     }
 
+    buttons = new CardPile(0, 0, 200, 50, "top", {
+        spread: {
+            x: 0,
+            y: 50,
+            centered: false,
+            fromRight: true,
+        },
+        hoveredCard: {enabled: false},
+    }, copy(DisplayRow));
+    buttons.resize = function(w, h) {
+        this.transform.position.x = 120;
+        this.transform.position.y = 0;
+    }
+    for (var i of ['Click', 'me please', 'now or', 'else!!!']) {
+        c = new Button(i);
+        buttons.addCard(c);
+    }
+
     // Add cards to hand
     for (var i = 0; i < 5; i ++) {
         var img;
@@ -183,6 +203,7 @@ $(document).ready(function() {
     cT.addCardPile(firstrow);
     cT.addCardPile(secondrow);
     cT.addCardPile(playerlist);
+    cT.addCardPile(buttons);
 
     // Begin main loop
     cT.beginLoop();

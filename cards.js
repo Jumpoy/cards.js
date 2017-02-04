@@ -286,6 +286,24 @@ class Card {
     }
 }
 
+class Button extends Card {
+    constructor(text) {
+        super();
+        this.text = text;
+    }
+
+    drawCard(ctx, x, y, w, h) {
+        ctx.fill(this.hovered ? '#aaa' : '#ccc');
+        ctx.stroke('darkgray');
+        ctx.rect(x, y, w, h);
+        ctx.strokeRect(x, y, w, h);
+
+        ctx.fill('black');
+        ctx.font('Arial', 14);
+        ctx.centerText(this.text, x + w/2, y + h/2);
+    }
+}
+
 class BottomCard extends Card {
 
 }
@@ -769,12 +787,18 @@ class CardPile {
                 if (opt.spread.centered) {
                     var left = -spreadW / 2;
                     var right = spreadW / 2;
+                    var top = -spreadH / 2;
+                    var bottom = spreadH / 2;
                 } else if (!opt.spread.fromRight) {
                     var right = spreadW;
                     var left = 0;
+                    var top = spreadH;
+                    var bottom = 0;
                 } else {
                     var left = spreadW;
                     var right = 0;
+                    var top = 0;
+                    var bottom = spreadH;
                 }
 
 
@@ -783,8 +807,8 @@ class CardPile {
                         (opt.leftOnTop ? -1 : 1) * right) +
                     Math.random() * opt.disturbance.x;
 
-                var top = -spreadH / 2;
-                var bottom = spreadH / 2;
+                //var top = -spreadH / 2;
+                //var bottom = spreadH / 2;
                 card.target.position.y = map(i, 0, this.cards.length - 1,
                     top, bottom) + Math.random() * opt.disturbance.y;
 
