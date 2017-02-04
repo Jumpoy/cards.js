@@ -78,8 +78,8 @@ $(document).ready(function() {
     // Create a textpile for testing
     textpile = new TextPile();
 
-    var t = new Text('hello', 0, 10, 'Arial', 15);
-    textpile.addText(t);
+    //var t = new Text('hello', 10, 10, 'Arial', 15);
+    //textpile.addText(t);
 
     // Create hand
     hand = new CardPile(0, 0, 108*1.2, 173*1.2, "bottom", {spread: {centered: false, x: 80}}, copy(SteadyHand));
