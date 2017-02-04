@@ -213,6 +213,56 @@ class Card {
         this.onClick = null;
     }
 
+    get left() {
+        return {
+            x: this.transform.position.x,
+            y: this.transform.position.y + this.size.height / 2
+        }
+    }
+
+    get right() {
+        return {
+            x: this.transform.position.x + this.size.width,
+            y: this.transform.position.y + this.size.height / 2
+        }
+    }
+
+    get top() {
+        return {
+            x: this.transform.position.x + this.size.width / 2,
+            y: this.transform.position.y
+        }
+    }
+
+    get bottom() {
+        return {
+            x: this.transform.position.x + this.size.width / 2,
+            y: this.transform.position.y + this.size.height
+        }
+    }
+
+    get center() {
+        return {
+            x: this.transform.position.x + this.size.width / 2,
+            y: this.transform.position.y + this.size.height / 2
+        }
+    }
+
+    relative(rel) {
+        switch(rel) {
+            case "center":
+                return this.center;
+            case "top":
+                return this.top;
+            case "bottom":
+                return this.bottom;
+            case "left":
+                return this.left;
+            case "right":
+                return this.right;
+        }
+    }
+
     mouseCollides(mouse) {
         var anch = this.adjustAnchor();
         if (this.transform.position.x < mouse.x - anch.x && mouse.x - anch.x < this.transform.position.x + this.size.width) {
@@ -646,11 +696,6 @@ class TextPile {
 
     move(pos, relative="center") {
         this.transform.position = pos;
-        if (this.rect) {
-            var p = this.rect.relative(relative);
-            this.transform.position.x -= p.x;
-            this.transform.position.y -= p.y;
-        }
     }
 
     removeNthText(n) {
@@ -705,7 +750,7 @@ class CardPile {
 
         this.anchor = anchor;
 
-        this.rect = makeRect(width, height, anchor);
+        //this.rect = makeRect(width, height, anchor);
         this.baseCard = new BottomCard();
         this.baseCard.anchor = this.anchor;
         this.baseCard.size.width = this.width;
@@ -741,62 +786,45 @@ class CardPile {
 
     move(pos, relative="center") {
         this.transform.position = pos;
-        if (this.rect) {
-            var p = this.rect.relative(relative);
+        if (this.baseCard) {
+            var p = this.baseCard.relative(relative);
             this.transform.position.x -= p.x;
             this.transform.position.y -= p.y;
         }
     }
 
     get left() {
-        if (!this.rect) {
-            return {
-                x: this.transform.position.x,
-                y: this.transform.position.y
-            }
-        }
         return {
-            x: this.transform.position.x + this.rect.left.x,
-            y: this.transform.position.y + this.rect.left.y
+            x: this.transform.position.x + this.baseCard.left.x,
+            y: this.transform.position.y + this.baseCard.left.y
         }
     }
 
     get right() {
-        if (!this.rect) {
-            return {
-                x: this.transform.position.x,
-                y: this.transform.position.y
-            }
-        }
         return {
-            x: this.transform.position.x + this.rect.right.x,
-            y: this.transform.position.y + this.rect.right.y
+            x: this.transform.position.x + this.baseCard.right.x,
+            y: this.transform.position.y + this.baseCard.right.y
         }
     }
 
     get top() {
-        if (!this.rect) {
-            return {
-                x: this.transform.position.x,
-                y: this.transform.position.y
-            }
-        }
         return {
-            x: this.transform.position.x + this.rect.top.x,
-            y: this.transform.position.y + this.rect.top.y
+            x: this.transform.position.x + this.baseCard.top.x,
+            y: this.transform.position.y + this.baseCard.top.y
         }
     }
 
     get bottom() {
-        if (!this.rect) {
-            return {
-                x: this.transform.position.x,
-                y: this.transform.position.y
-            }
-        }
         return {
-            x: this.transform.position.x + this.rect.bottom.x,
-            y: this.transform.position.y + this.rect.bottom.y
+            x: this.transform.position.x + this.baseCard.bottom.x,
+            y: this.transform.position.y + this.baseCard.bottom.y
+        }
+    }
+
+    get center() {
+        return {
+            x: this.transform.position.x + this.baseCard.center.x,
+            y: this.transform.position.y + this.baseCard.center.y
         }
     }
 
