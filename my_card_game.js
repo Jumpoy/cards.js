@@ -89,25 +89,16 @@ $(document).ready(function() {
     }
 
     // Create discard
-    discard = new CardPile(0, 0, 108*1.2, 173*1.2, "bottom", {
-        hover: {
-            spread: {
-                centered: false,
-                fromRight: true,
-                perCard: true,
-                x: -60,
-                leftOnTop: true
-
-            },
-            spreadFromHovered: {
-                right: 70,
-                //left: 20
-            },
-        }
-    }, CompressedPile);
+    discard = new CardPile(0, 0, 108, 173, "right", {
+        spread: {
+            x: 0,
+            y: 60,
+            centered: false,
+            fromRight: true
+        },
+    }, copy(SteadyHand));
     discard.resize = function(w, h) {
-        this.transform.position.x = w * 9/10;
-        this.transform.position.y = h;
+        discard.move({x: w, y: 180}, "right");
     }
 
     // Create first row
@@ -179,7 +170,7 @@ $(document).ready(function() {
 
     // Add cards for first row
     for (var link of firstrows) {
-        c = new BorderedPictureCard( link, 10, "center");
+        c = new BorderedPictureCard( link, 1000000, "center");
         c.onClick = function() {
             this.num --;
         }
