@@ -188,6 +188,23 @@ class CardTable {
         this.card_piles.push(cardPile);
     }
 
+    removeCardPile(cardPile) {
+        for (var i = 0; i < this.card_piles.length; i ++) {
+            if (this.card_piles[i] = cardPile) {
+                this.card_piles.splice(i, 1);
+                break;
+            }
+        }
+    }
+
+    removeNthCardPile(n) {
+        this.card_piles[i].splice(n, 1);
+    }
+
+    empty() {
+        this.card_piles = [];
+    }
+
     mousePressed() {
         this.card_piles.map((card_pile) => {
             if (card_pile.hovered) card_pile.mousePressed();
