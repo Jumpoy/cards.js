@@ -190,7 +190,7 @@ class CardTable {
 
     removeCardPile(cardPile) {
         for (var i = 0; i < this.card_piles.length; i ++) {
-            if (this.card_piles[i] = cardPile) {
+            if (this.card_piles[i] === cardPile) {
                 this.card_piles.splice(i, 1);
                 break;
             }
